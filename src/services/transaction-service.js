@@ -29,7 +29,7 @@ class TransactionService {
         let { _id, transactionId, channel } = userInputs;
 
         try {
-            const transaction = await this.repository.GetTransaction(transactionId);
+            const transaction = await this.repository.GetUnpaidTransaction(transactionId);
             if (!transaction ||
                 (Object.keys(transaction).length == 0 && transaction.constructor == Object))
             {
@@ -52,6 +52,42 @@ class TransactionService {
                 throw error
             }
             throw new APIError('Internal server error', 500, error);
+        }
+    }
+
+    async getAllTransactions() {
+        try {
+            return await this.repository.GetAllTransaction();
+        } catch(e) {
+            console.log(e)
+            throw new APIError("Get All Transaction", 500, e)
+        }
+    }
+
+    async updateTransactionStatus(txId, newStatus) {
+        try {
+            const tx = await this.repository.GetTransactionById(txId);
+            tx.status = newStatus
+            tx.save()
+            return tx;
+        } catch(e) {
+            console.log(e)
+            throw new APIError("Update Transaction Status", 500, e)
+        }
+    }
+
+    async cancelTransaction(txId) {
+        try {
+            const tx = await this.repository.GetUnpaidTransaction(txId)
+            if (!tx || (Object.keys(tx).length == 0 && tx.constructor === Object)) {
+                return { message: `${txId} is already paid`}
+            }
+            tx.status = "canceled"
+            tx.save()
+            return { message: "success", tx }
+        } catch(e) {
+            console.log(e)
+            throw new APIError("Cancel Transaction", 500, e)
         }
     }
 }
