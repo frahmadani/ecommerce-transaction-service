@@ -1,14 +1,14 @@
 const orderEventHandler = require('../api/handler/event_handler');
-// const logger = require('../helpers/utils/logger');
+// const logger = require('./app-logger');
 
 const init = () => {
-    // logger.log('info','Observer is Running...','myEmitter.init');
-    initEventListener();
+  console.log('info', 'Observer is Running...', 'myEmitter.init');
+  initEventListener();
 };
 const initEventListener = () => {
-    orderEventHandler.addOrder();
+  orderEventHandler.addOrderTransaction();
 };
 
 module.exports = {
-    init: init
+  init: init,
 };

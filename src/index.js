@@ -4,9 +4,6 @@ const { databaseConn } = require('./database');
 const expressApp = require('./express-app');
 const observer = require('./utils/observers');
 
-
-const { Kafka } = require('kafkajs');
-
 const StartServer = async () => {
 
     const app = express();

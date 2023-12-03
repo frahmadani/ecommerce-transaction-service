@@ -4,14 +4,16 @@ const Schema = mongoose.Schema;
 
 const TransactionSchema = new Schema({
     
-    orderid: String,
+    orderId: String,
     transactionId: String,
     transactionDate: {
         type: Date,
         default: Date.now()
     },
+    userId: String,
     status: String,
-    channel: String
+    channel: String,
+    productIds: [String]
 }, {
     toJSON: {
         transform(doc, ret) {
