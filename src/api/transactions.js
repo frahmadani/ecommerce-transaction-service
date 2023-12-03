@@ -56,7 +56,7 @@ module.exports = async (app, trxSvc) => {
             console.log("sent all msg to kafka")
 
             logger.info('Success paying for transaction');
-            return res.status(200).json(data);
+            return res.status(200).json({ status: 'success', message:'Success paying for transaction', data});
 
         } catch (error) {
             if (error instanceof APIError) {
@@ -64,10 +64,10 @@ module.exports = async (app, trxSvc) => {
                 let desc = error.description || "Internal server error"
 
                 logger.error(`Failed paying for transaction: ${desc}`);
-                return res.status(statusCode).json(desc)
+                return res.status(statusCode).json({ status: 'success', message:'Failed paying for transaction', data: desc})
             }
             logger.error(`Failed paying for transaction: ${error}`);
-            return res.status(500).json(error);
+            return res.status(500).json({ status: 'error', message:'Failed paying for transaction', data: error });
         }
         
     });
@@ -81,17 +81,17 @@ module.exports = async (app, trxSvc) => {
             if (transaction && transaction.length <= 0) {
 
                 logger.error(`Failed retrieving transactions`);
-                return res.status(404).json({ message: "No transaction" })
+                return res.status(404).json({ status: 'error', message:'No transaction' })
             }
 
             logger.info('Success retrieving transactions');
-            return res.status(200).json({ data: transaction })
+            return res.status(200).json({ status: 'success', message:'Success retrieving transactions', data: transaction })
         } catch(e) {
             console.log(e)
             logger.error('Failed retrieving transactions');
             return res.status(500).json( {
-                status: "fail",
-                message: "some unexpected happened"
+                status: "error",
+                message: "Error getting transactions"
             })
         }
     })
@@ -124,6 +124,7 @@ module.exports = async (app, trxSvc) => {
             logger.info('Success canceling transaction');
             return res.status(200).json({
                 status: "success",
+                message: 'Success canceling transaction',
                 data: {
                     transactionId,
                     transactionDate: tx.transactionDate,
@@ -136,8 +137,8 @@ module.exports = async (app, trxSvc) => {
             console.log(e)
             logger.error('Failed canceling transaction');
             return res.status(500).json( {
-                status: "fail",
-                message: "some unexpected happened"
+                status: "error",
+                message: "Failed canceling transaction"
             })
         }
 
