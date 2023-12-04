@@ -1,5 +1,4 @@
 const { Transaction } = require('../models');
-const { v4: uuidv4 } = require('uuid');
 const { APIError } = require('../../utils/app-errors');
 
 class TransactionRepository {

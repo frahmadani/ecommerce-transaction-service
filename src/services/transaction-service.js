@@ -55,9 +55,9 @@ class TransactionService {
         }
     }
 
-    async getAllTransactions() {
+    async getAllTransactions(id) {
         try {
-            return await this.repository.GetAllTransaction();
+            return await this.repository.GetAllTransaction(id);
         } catch(e) {
             console.log(e)
             throw new APIError("Get All Transaction", 500, e)
