@@ -37,8 +37,8 @@ class TransactionService {
             }
 
             transaction.status = 'paid';
-            if (channel && !(channel === 'bank_payment' || channel === 'cash')) {
-                console.log(channel, " either not bank_payment or not cash")
+            if (channel && !(channel === 'bank_transfer' || channel === 'cash')) {
+                console.log(channel, " either not bank_transfer or not cash")
                 channel = 'unspecified_payment_channel';
             }
             transaction.channel = channel;

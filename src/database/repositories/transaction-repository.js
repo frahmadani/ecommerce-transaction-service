@@ -51,8 +51,11 @@ class TransactionRepository {
         }
     }
 
-    async GetAllTransaction() {
+    async GetAllTransaction(userId) {
         try {
+            if (userId) {
+                return await Transaction.find({ userId: userId })
+            }
             return await Transaction.find();
         } catch(e) {
             console.log(e)

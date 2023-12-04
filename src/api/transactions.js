@@ -1,7 +1,7 @@
 const TransactionService = require('../services/transaction-service');
 const isAuth = require('./middlewares/auth'); 
 const { APIError } = require('../utils/app-errors');
-const kafkaProducer = require("../utils/kafka/kafka_producer");
+const kafkaProducer = require('../utils/kafka/kafka_producer');
 const logger = require('../utils/app-logger');
 
 
@@ -28,7 +28,8 @@ module.exports = async (app, trxSvc) => {
                 logger.error(`Failed paying for transaction: data transactionId not found`);
                 
                 return res.status(404).json({
-                    message: `Data transactionId not found`
+                    status: "error",
+                    message: `Data transactionId ${transactionId} not found`
                 })
             }
             console.log("data pay4trx:", data)
@@ -41,11 +42,12 @@ module.exports = async (app, trxSvc) => {
                         orderId: data.orderId,
                         orderIdOid: data._id,
                         status: data.status,
+                        transactionId: transactionId,
                         product: { _id: productId }
                     }
                 }
                 const dataToKafka = {
-                    topic: 'ecommerce-service-remove-from-cart',
+                    topic: 'ecommerce-service-pay-transaction',
                     body: payload,
                     partition: 1,
                     attributes: 1
@@ -55,43 +57,42 @@ module.exports = async (app, trxSvc) => {
             }
             console.log("sent all msg to kafka")
 
-            logger.info('Success paying for transaction');
-            return res.status(200).json({ status: 'success', message:'Success paying for transaction', data});
+            return res.status(200).json({
+                status: "success", message: "success",
+                data
+            })
 
         } catch (error) {
             if (error instanceof APIError) {
                 let statusCode = error.statusCode || 500
                 let desc = error.description || "Internal server error"
-
-                logger.error(`Failed paying for transaction: ${desc}`);
-                return res.status(statusCode).json({ status: 'success', message:'Failed paying for transaction', data: desc})
+                return res.status(statusCode).json(desc)
             }
-            logger.error(`Failed paying for transaction: ${error}`);
-            return res.status(500).json({ status: 'error', message:'Failed paying for transaction', data: error });
+            return res.status(500).json({
+                status: "error", message: error
+            });
         }
         
     });
 
     app.get('/transaction', isAuth, async (req, res) => {
-        logger.info('API GET /transaction is called');
-        // const { _id } = req.user
+        const { _id } = req.user
         try {
 
-            const transaction = await service.getAllTransactions()
+            const transaction = await service.getAllTransactions(_id)
             if (transaction && transaction.length <= 0) {
-
-                logger.error(`Failed retrieving transactions`);
-                return res.status(404).json({ status: 'error', message:'No transaction' })
+                return res.status(404).json({ status: "success", message: "No transaction" })
             }
-
-            logger.info('Success retrieving transactions');
-            return res.status(200).json({ status: 'success', message:'Success retrieving transactions', data: transaction })
+            return res.status(200).json({
+                status: "success", message: "success",
+                data: transaction
+            })
         } catch(e) {
             console.log(e)
             logger.error('Failed retrieving transactions');
             return res.status(500).json( {
                 status: "error",
-                message: "Error getting transactions"
+                message: "some unexpected happened"
             })
         }
     })
@@ -103,7 +104,7 @@ module.exports = async (app, trxSvc) => {
         try {
             const { message, tx } = await service.cancelTransaction(transactionId)
             if (!tx) {
-                return res.status(400).json( { message } )
+                return res.status(400).json( { status: "error", message } )
             }
             let payload = {
                 data: {
